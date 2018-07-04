@@ -1,10 +1,10 @@
 {
   "name": "promise",
   "version": "0.0.1",
-  "description": "node promise",
+  "description": "javascript promise mode",
   "main": "index.js",
   "scripts": {
-    "test": "none"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -12,12 +12,13 @@
   },
   "keywords": [
     "node",
-    "promise",
-    "a+"
+    "promise a+"
   ],
   "author": "vanpipy",
   "license": "MIT",
   "dependencies": {
-    "compose-parallel": "^1.0.2"
+    "chai": "^4.1.2",
+    "compose-parallel": "^1.0.2",
+    "mocha": "^5.2.0"
   }
 }

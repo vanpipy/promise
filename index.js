@@ -1,5 +1,5 @@
 'use strict';
 
-const promise = require('./promise');
+const Promise = require('./promise');
 
 module.exports = Promise;

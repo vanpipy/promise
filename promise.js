@@ -46,14 +46,4 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
     return this.next;
 };
 
-const t = new Promise(function(resolve, reject) {
-    setTimeout(() => {
-        resolve(100);
-    }, 1000);
-});
-
-t.then((result) => {
-    return result * 2;
-}).then((r) => {
-    console.log(r);
-});
+module.exports = Promise;
