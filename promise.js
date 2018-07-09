@@ -1,9 +1,70 @@
 
 // const { curry, compose } = require('compose-parallel');
 
+const N = null;
+const PromiseType = '[object Promise]';
+
 const stages = { pending: 0, fulfilled: 1, rejected: 2, };
 
-function noop () {}
+var count = 0;
+
+function noop (v) { return v; }
+
+function assert (variable, typeWanted) {
+    if (typeof variable != typeWanted) {
+        throw `${typeWanted} needed`;
+    }
+}
+
+function errorCatcher (done) {
+    try {
+        done();
+    } catch (error) {
+        throw error;
+    }
+}
+
+function makeWarning (content) {
+    console.warn(content);
+}
+
+function callbackRunner (context, callback) {
+    assert(callback, 'function');
+
+    callback((value) => {
+        context.resolve(value);
+    }, (reason) => {
+        context.reject(reason);
+    });
+}
+
+function doResolve (context) {
+    let value;
+
+    context.stage = stages.fulfilled;
+    const next = context.next;
+
+    try {
+        value = context._onFulfilled(context.value);
+    } catch (error) {
+        context.stage = stages.rejected;
+        context.reason = error;
+    }
+
+    if (next && next.toString() == PromiseType) {
+        next.stage = context.stage;
+        next.value = value;
+
+        if (context.reason || context.stage == stages.rejected) {
+            next.reason = context.reason;
+            makeWarning(next.reason);
+
+            return;
+        }
+
+        doResolve(next);
+    }
+}
 
 /*
  * 1. The value.
@@ -12,35 +73,44 @@ function noop () {}
 function Promise (fn) {
     const ctx = this;
 
-    ctx.value = void 0;
+    ctx.$id = count++;
+
+    ctx.value = N;
+    ctx.exception = N;
+    ctx.reason = N;
+
+    ctx._onFulfilled = noop;
+    ctx._onRejected = noop;
+
     ctx.stage = stages.pending;
 
-    fn(function(value) {
-        ctx.resolve(value);
-    }, function(reason) {
-        ctx.reject(reason);
-    });
+    callbackRunner(ctx, fn);
 }
 
-Promise.prototype.toString = () => '[object Promise]';
+Promise.prototype.toString = () => PromiseType;
 
 Promise.prototype.resolve = function (value) {
-    //Unfold the input
-    this.stage = stages.fulfilled;
+    //TODO: Unfold the input
+    this.value = value;
 
-    if (this.next) {
-        this.next.value = this.onFulfilled(value);
-        this.next.resolve(this.next.value);
-    }
+    doResolve(this, value);
 };
 
 Promise.prototype.reject = function (reason) {
+    this.reason = reason;
 
+    this.stage = stages.rejected;
 };
 
 Promise.prototype.then = function (onFulfilled, onRejected) {
-    this.onFulfilled = onFulfilled;
-    this.onRejected = onRejected;
+    if (typeof onFulfilled == 'function') {
+        this._onFulfilled = onFulfilled;
+    }
+
+    if (typeof onRejected == 'function') {
+        this._onRejected = onRejected;
+    }
+
     this.next = new Promise(noop);
 
     return this.next;
