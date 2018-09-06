@@ -1,6 +1,7 @@
 
 const expect = require('chai').expect;
 const Promise = require('../promise');
+const interval = 10;
 
 describe('Promise', () => {
     it('should be a promise object', () => {
@@ -12,7 +13,7 @@ describe('Promise', () => {
         const promise = new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(100);
-            }, 500);
+            }, interval);
         });
 
         promise
@@ -25,20 +26,26 @@ describe('Promise', () => {
             });
     });
 
-    it('should be reject in next promise', (done) => {
+    it('should be extract subpromise and get same result', (done) => {
         const promise = new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(100);
-            }, 500);
+            }, interval);
         });
 
-        const next = promise.then((result) => {
-            throw 'error';
-        });
-
-        setTimeout(() => {
-            expect(next.reason).to.equal('error');
+        promise.then((rs) => {
+            return rs * 10;
+        }).then((res) => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(2 * res + 100);
+                }, interval);
+            }).then((result) => {
+                return `The result you want is ${result / 100}`;
+            });
+        }).then((result) => {
+            expect(result).to.equal('The result you want is 21');
             done();
-        }, 1000);
+        });
     });
 });
