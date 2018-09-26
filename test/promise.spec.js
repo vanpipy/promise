@@ -48,4 +48,19 @@ describe('Promise', () => {
             done();
         });
     });
+
+    it('should be reject a promise', (done) => {
+        const promise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject('error');
+            }, interval);
+        });
+
+        promise.then((resolution) => {
+            // Nothing
+        }, (rejection) => {
+            expect(rejection).to.equal('error');
+            done();
+        });
+    });
 });

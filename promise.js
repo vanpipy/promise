@@ -7,6 +7,8 @@ var Promise = (function() {
 
     const stages = { pending: 0, fulfilled: 1, rejected: 2, };
 
+    const log = console || noop;
+
     var count = 0;
 
     function noop (v) { return v; }
@@ -17,12 +19,14 @@ var Promise = (function() {
         }
     }
 
-    function makeWarn (content) {
-        console.warn(content);
-    }
-
-    function makeError (content) {
-        console.error(content);
+    function print (content, logType) {
+        if (typeof log !== 'undefined' && log[logType]) {
+            try {
+                log[logType](content);
+            } catch (e) {
+                /* handle error */
+            }
+        }
     }
 
     function isPromise (context) {
@@ -78,7 +82,18 @@ var Promise = (function() {
     }
 
     function doReject (context, reason) {
-        makeError(reason);
+        const next = context.tasks[0];
+
+        try {
+            context.stage = stages.rejected;
+            context.reason = reason;
+
+            reason = next._onRejected(reason);
+        } catch (e) {
+            print(e, 'error');
+        }
+
+        print(reason, 'error');
     }
 
     /*
