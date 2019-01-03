@@ -1,6 +1,6 @@
 {
   "name": "promise",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "javascript promise mode",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "none"
+    "url": "git+https://github.com/vanpipy/promise.git"
   },
   "keywords": [
     "node",
